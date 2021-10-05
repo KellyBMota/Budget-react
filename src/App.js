@@ -7,30 +7,20 @@ import DisplayBalances from './components/DisplayBalances';
 import { useEffect, useState } from 'react';
 import EntryLines from './components/EntryLines';
 import ModalEdit from './components/ModalEdit';
+import { useSelector } from 'react-redux';
 
 function App() {
-  const [description, setDescription] = useState('');
-  const [value, setValue] = useState('');
-  const [isExpense, setIsExpense] = useState(true);
-  const[entries, setEntries] = useState(initialState);
-  const [isOpen, setIsOpen] = useState(false);
-  const [entryId, setEntryId] = useState();
   const [totalIncomes, setTotalIncomes] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalBalance, setTotalBalance] = useState(0);
+  const entries = useSelector(state => state.entries);
+  const [entry, setEntry] = useState();
+  const {isOpen, id} = useSelector(state => state.modals);
 
   useEffect(() => {
-    if(!isOpen && entryId) {
-      const index = entries.findIndex(entry => entry.id === entryId);
-      const newEntries = [...entries];
-      newEntries[index].description = description;
-      newEntries[index].value = value;
-      newEntries[index].isExpense = isExpense;
-      setEntries(newEntries);
-      resetEntry();
-    }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+    const index = entries.findIndex(entry => entry.id === id);
+    setEntry(entries[index]);
+  }, [isOpen, id]);
 
   useEffect(() => {
     let totalIncomes = 0;
@@ -45,98 +35,22 @@ function App() {
     setTotalIncomes(totalIncomes);
   }, [entries]);
 
-  function deleteEntry(id) {
-    const result = entries.filter(entry => entry.id !== id);
-    setEntries(result);
-  }
-
-  function editEntry(id) {
-    if(id){
-      const index = entries.findIndex(entry => entry.id === id);
-      const entry = entries[index];
-      setEntryId(id);
-      setDescription(entry.description);
-      setValue(entry.value);
-      setIsExpense(entry.isExpense);
-      setIsOpen(true);
-    }
-  }
-
-  function resetEntry() {
-    setDescription('');
-    setValue('');
-    setIsExpense(true);
-  }
-
-  function addEntry() {
-    const result = entries.concat({
-      id:entries.length+1, 
-      description, 
-      value, 
-      isExpense});
-    setEntries(result);
-    resetEntry();
-  }
-
   return (
     <Container>
-
       <MainHeader title='Budget' type='h1'/>
       <DisplayBalance title='Your Balance:' value={totalBalance} size='small'/>
 
       <DisplayBalances totalIncomes={totalIncomes} totalExpenses={totalExpenses} />
 
       <MainHeader title='History' type='h3'/>
-      <EntryLines entries={entries} deleteEntry={deleteEntry} editEntry={editEntry}/>
+      <EntryLines entries={entries} />
 
       <MainHeader title='Add new transaction' type='h3'/>
-      <NewEntryForm 
-        addEntry={addEntry}
-        description={description}
-        value={value}
-        isExpense={isExpense}
-        setValue={setValue}
-        setDescription={setDescription}
-        setIsExpense={setIsExpense}/>
+      <NewEntryForm />
 
-      <ModalEdit 
-        isOpen={isOpen} 
-        setIsOpen={setIsOpen} 
-        description={description}
-        value={value}
-        isExpense={isExpense}
-        setValue={setValue}
-        setDescription={setDescription}
-        setIsExpense={setIsExpense}/>
+      <ModalEdit isOpen={isOpen} {...entry}/>
     </Container>
   );
 }
 
 export default App;
-
-var initialState = [
-  {
-    id:1,
-    description:"Work income",
-    value:1000,
-    isExpense:false
-  },
-  {
-    id:2,
-    description:"Water bill",
-    value:20,
-    isExpense:true
-  },
-  {
-    id:3,
-    description:"Rent",
-    value:300,
-    isExpense:true
-  },
-  {
-    id:4,
-    description:"Power bill",
-    value:50,
-    isExpense:true
-  }
-]
