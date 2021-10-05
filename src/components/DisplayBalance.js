@@ -9,7 +9,7 @@ function DisplayBalance(props) {
                 {title}
             </Statistic.Label>
             <Statistic.Value>
-                {value}
+                ${value}
             </Statistic.Value>
         </Statistic>
         );
